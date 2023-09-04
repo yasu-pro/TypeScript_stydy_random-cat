@@ -1,19 +1,15 @@
-import { NextPage } from "next";
+import { GetServerSideProps ,NextPage } from "next";
 import { useEffect, useState } from "react";
+import styles from "./index.module.css";
 
 
+type Props = {
+    initialImageUrl: string;
+}
 
-const IndexPage: NextPage = () => {
-    const [imageUrl, setImageUrl] = useState("");
-    const [loading, setLoading] = useState(true);
-
-    // マウント時(レンダリング時)に画像を読み込む
-    useEffect(()=> {
-        fetchImage().then((newImage) => {
-            setImageUrl(newImage.url);
-            setLoading(false)
-        })
-    },[]);
+const IndexPage: NextPage<Props> = ({initialImageUrl}) => {
+    const [imageUrl, setImageUrl] = useState(initialImageUrl);
+    const [loading, setLoading] = useState(false);
 
     const handleClick = async () => {
         setLoading(true);
@@ -24,13 +20,27 @@ const IndexPage: NextPage = () => {
     }
 
     return (
-        <div>
-            <button onClick={handleClick}>他のにゃんこも見る</button>
-            <div>{loading || <img src={imageUrl} />}</div>
+        <div className={styles.page}>
+            <button onClick={handleClick} className={styles.button}>
+                他のにゃんこも見る
+            </button>
+            <div className={styles.frame}>
+                {loading || <img src={imageUrl} className={styles.img} />}
+            </div>
         </div>
     );
 };
 export default IndexPage;
+
+// サーバーサイっで実行する処理
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+    const image = await fetchImage();
+    return {
+        props: {
+            initialImageUrl: image.url,
+        }
+    }
+}
 
 type Image = {
     url: string;
